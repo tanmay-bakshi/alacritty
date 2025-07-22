@@ -526,6 +526,14 @@ configuration. See *alacritty*(5) for full configuration format documentation.
 :  _"Command|Shift"_
 :[
 :  _"SelectPreviousTab"_
+|  _"Tab"_
+:  _"Control"_
+:[
+:  _"SelectNextTab"_
+|  _"Tab"_
+:  _"Control|Shift"_
+:[
+:  _"SelectPreviousTab"_
 |  _"1"_
 :  _"Command"_
 :[

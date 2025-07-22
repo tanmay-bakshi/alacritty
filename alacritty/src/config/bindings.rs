@@ -576,6 +576,8 @@ pub fn platform_key_bindings() -> Vec<KeyBinding> {
         "[",    ModifiersState::SUPER | ModifiersState::SHIFT;                 Action::SelectPreviousTab;
         Tab,    ModifiersState::SUPER;                                         Action::SelectNextTab;
         Tab,    ModifiersState::SUPER | ModifiersState::SHIFT;                 Action::SelectPreviousTab;
+        Tab,    ModifiersState::CONTROL;                                       Action::SelectNextTab;
+        Tab,    ModifiersState::CONTROL | ModifiersState::SHIFT;               Action::SelectPreviousTab;
         "1",    ModifiersState::SUPER;                                         Action::SelectTab1;
         "2",    ModifiersState::SUPER;                                         Action::SelectTab2;
         "3",    ModifiersState::SUPER;                                         Action::SelectTab3;
