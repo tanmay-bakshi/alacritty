@@ -57,6 +57,7 @@ pub struct WindowContext {
     notifier: Notifier,
     mouse: Mouse,
     touch: TouchPurpose,
+    sync_tab_font_size: bool,
     occluded: bool,
     preserve_title: bool,
     #[cfg(not(windows))]
@@ -229,6 +230,7 @@ impl WindowContext {
         }
 
         // Create context for the Alacritty window.
+        let sync_tab_font_size = config.window.sync_tab_font_size;
         Ok(WindowContext {
             preserve_title,
             terminal,
@@ -246,6 +248,7 @@ impl WindowContext {
             search_state: Default::default(),
             event_queue: Default::default(),
             modifiers: Default::default(),
+            sync_tab_font_size,
             occluded: Default::default(),
             mouse: Default::default(),
             touch: Default::default(),
@@ -262,6 +265,8 @@ impl WindowContext {
 
         self.display.update_config(&self.config);
         self.terminal.lock().set_options(self.config.term_options());
+
+        self.sync_tab_font_size = self.config.window.sync_tab_font_size;
 
         // Reload cursor if its thickness has changed.
         if (old_config.cursor.thickness() - self.config.cursor.thickness()).abs() > f32::EPSILON {
@@ -428,6 +433,7 @@ impl WindowContext {
             touch: &mut self.touch,
             dirty: &mut self.dirty,
             occluded: &mut self.occluded,
+            sync_tab_font_size: &mut self.sync_tab_font_size,
             terminal: &mut terminal,
             #[cfg(not(windows))]
             master_fd: self.master_fd,

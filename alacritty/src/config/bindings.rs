@@ -238,6 +238,9 @@ pub enum Action {
     /// Toggle vi mode.
     ToggleViMode,
 
+    /// Toggle font size synchronization across window tabs.
+    ToggleTabFontSizeSync,
+
     /// Allow receiving char input.
     ReceiveChar,
 

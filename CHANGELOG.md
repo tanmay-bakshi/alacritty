@@ -10,6 +10,10 @@ Notable changes to the `alacritty_terminal` crate are documented in its
 
 ## 0.15.1
 
+### Added
+
+- Option `window.sync_tab_font_size` to synchronize font size across all tabs in a window on macOS
+
 ### Changed
 
 - Error out when socket fails to create with `--daemon`

@@ -110,6 +110,7 @@ pub trait ActionContext<T: EventListener> {
     fn event_loop(&self) -> &ActiveEventLoop;
     fn mouse_mode(&self) -> bool;
     fn clipboard_mut(&mut self) -> &mut Clipboard;
+    fn sync_tab_font_size(&mut self) -> &mut bool;
     fn scheduler_mut(&mut self) -> &mut Scheduler;
     fn start_search(&mut self, _direction: Direction) {}
     fn confirm_search(&mut self) {}
@@ -331,6 +332,9 @@ impl<T: EventListener> Execute<T> for Action {
             Action::IncreaseFontSize => ctx.change_font_size(FONT_SIZE_STEP),
             Action::DecreaseFontSize => ctx.change_font_size(-FONT_SIZE_STEP),
             Action::ResetFontSize => ctx.reset_font_size(),
+            Action::ToggleTabFontSizeSync => {
+                *ctx.sync_tab_font_size() = !*ctx.sync_tab_font_size();
+            },
             Action::ScrollPageUp
             | Action::ScrollPageDown
             | Action::ScrollHalfPageUp
@@ -1138,6 +1142,7 @@ mod tests {
         pub modifiers: Modifiers,
         config: &'a UiConfig,
         inline_search_state: &'a mut InlineSearchState,
+        sync_tab_font_size: &'a mut bool,
     }
 
     impl<T: EventListener> super::ActionContext<T> for ActionContext<'_, T> {
@@ -1229,6 +1234,10 @@ mod tests {
             self.clipboard
         }
 
+        fn sync_tab_font_size(&mut self) -> &mut bool {
+            self.sync_tab_font_size
+        }
+
         #[cfg(target_os = "macos")]
         fn event_loop(&self) -> &ActiveEventLoop {
             unimplemented!();
@@ -1272,6 +1281,7 @@ mod tests {
                 };
 
                 let mut inline_search_state = InlineSearchState::default();
+                let mut sync_tab_font_size = false;
                 let mut message_buffer = MessageBuffer::default();
 
                 let context = ActionContext {
@@ -1283,6 +1293,7 @@ mod tests {
                     message_buffer: &mut message_buffer,
                     inline_search_state: &mut inline_search_state,
                     config: &cfg,
+                    sync_tab_font_size: &mut sync_tab_font_size,
                 };
 
                 let mut processor = Processor::new(context);

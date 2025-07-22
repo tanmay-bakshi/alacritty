@@ -141,6 +141,13 @@ This section documents the *[window]* table of the configuration file.
 
 	Default: _false_
 
+*sync_tab_font_size* = _true_ | _false_ # _(macOS only)_
+
+	When enabled, changing the font size in one tab will update all tabs in
+	the same window to use the new size.
+
+	Default: _false_
+
 *startup_mode* = _"Windowed"_ | _"Maximized"_ | _"Fullscreen"_ | _"SimpleFullscreen"_
 
 	Startup mode (changes require restart)
@@ -848,6 +855,8 @@ _https://docs.rs/winit/latest/winit/keyboard/enum.Key.html#variant.Dead_
 			Clear active selection.
 		*ToggleViMode*
 			Toggle vi mode.
+		*ToggleTabFontSizeSync*
+			Toggle font size synchronization between window tabs.
 		*SearchForward*
 			Start a forward buffer search.
 		*SearchBackward*

@@ -511,6 +511,11 @@ pub enum EventType {
     Message(Message),
     Scroll(Scroll),
     CreateWindow(WindowOptions),
+    /// Synchronize font size between tabs in the same window.
+    SyncTabFontSize {
+        tabbing_id: String,
+        size: f32,
+    },
     #[cfg(unix)]
     IpcConfig(IpcConfig),
     BlinkCursor,
@@ -640,6 +645,7 @@ pub struct ActionContext<'a, N, T> {
     pub inline_search_state: &'a mut InlineSearchState,
     pub dirty: &'a mut bool,
     pub occluded: &'a mut bool,
+    pub sync_tab_font_size: &'a mut bool,
     pub preserve_title: bool,
     #[cfg(not(windows))]
     pub master_fd: RawFd,
@@ -881,17 +887,13 @@ impl<'a, N: Notify + 'a, T: EventListener> input::ActionContext<T> for ActionCon
     fn change_font_size(&mut self, delta: f32) {
         // Round to pick integral px steps, since fonts look better on them.
         let new_size = self.display.font_size.as_px().round() + delta;
-        self.display.font_size = FontSize::from_px(new_size);
-        let font = self.config.font.clone().with_size(self.display.font_size);
-        self.display.pending_update.set_font(font);
+        self.set_font_size(new_size, true);
     }
 
     fn reset_font_size(&mut self) {
         let scale_factor = self.display.window.scale_factor as f32;
-        self.display.font_size = self.config.font.size().scale(scale_factor);
-        self.display
-            .pending_update
-            .set_font(self.config.font.clone().with_size(self.display.font_size));
+        let size = self.config.font.size().scale(scale_factor).as_px();
+        self.set_font_size(size, true);
     }
 
     #[inline]
@@ -1356,6 +1358,10 @@ impl<'a, N: Notify + 'a, T: EventListener> input::ActionContext<T> for ActionCon
         self.clipboard
     }
 
+    fn sync_tab_font_size(&mut self) -> &mut bool {
+        self.sync_tab_font_size
+    }
+
     fn scheduler_mut(&mut self) -> &mut Scheduler {
         self.scheduler
     }
@@ -1464,6 +1470,22 @@ impl<'a, N: Notify + 'a, T: EventListener> ActionContext<'a, N, T> {
         }
 
         *self.dirty = true;
+    }
+
+    fn set_font_size(&mut self, size: f32, broadcast: bool) {
+        self.display.font_size = FontSize::from_px(size);
+        let font = self.config.font.clone().with_size(self.display.font_size);
+        self.display.pending_update.set_font(font);
+
+        if broadcast && *self.sync_tab_font_size {
+            #[cfg(target_os = "macos")]
+            {
+                let tab_id = self.display.window.tabbing_id();
+                let event =
+                    Event::new(EventType::SyncTabFontSize { tabbing_id: tab_id, size }, None);
+                let _ = self.event_proxy.send_event(event);
+            }
+        }
     }
 
     /// Cleanup the search state.
@@ -1732,6 +1754,15 @@ impl input::Processor<EventProxy, ActionContext<'_, Notifier, EventProxy>> {
                 EventType::Message(message) if !self.ctx.message_buffer.is_queued(&message) => {
                     self.ctx.message_buffer.push(message);
                     self.ctx.display.pending_update.dirty = true;
+                },
+                EventType::SyncTabFontSize { tabbing_id: _tab_id, size: _size } => {
+                    #[cfg(target_os = "macos")]
+                    if self.ctx.display.window.tabbing_id() == _tab_id
+                        && *self.ctx.sync_tab_font_size
+                    {
+                        self.ctx.set_font_size(_size, false);
+                        *self.ctx.dirty = true;
+                    }
                 },
                 EventType::Terminal(event) => match event {
                     TerminalEvent::Title(title) => {

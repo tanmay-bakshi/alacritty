@@ -7,6 +7,9 @@ members = [
 ]
 resolver = "2"
 
+[patch.crates-io]
+crossfont = { path = "vendor/crossfont" }
+
 [profile.release]
 lto = "thin"
 debug = 1

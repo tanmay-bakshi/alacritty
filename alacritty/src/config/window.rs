@@ -47,6 +47,9 @@ pub struct WindowConfig {
     /// Request blur behind the window.
     pub blur: bool,
 
+    /// Synchronize font size across all tabs of the same window.
+    pub sync_tab_font_size: bool,
+
     /// Controls which `Option` key should be treated as `Alt`.
     option_as_alt: OptionAsAlt,
 
@@ -71,6 +74,7 @@ impl Default for WindowConfig {
         Self {
             dynamic_title: true,
             blur: Default::default(),
+            sync_tab_font_size: Default::default(),
             embed: Default::default(),
             padding: Default::default(),
             opacity: Default::default(),
